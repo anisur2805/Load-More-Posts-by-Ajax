@@ -1,0 +1,61 @@
+<div class="wrap">
+	<div id="primary" class="content-area">
+		<main id="main" class="site-main" role="main">
+			<div class="container">
+				<div class="row">
+					<?php the_title('<h1><strong>', '</strong></h1>'); ?>
+					<?php
+					while ( have_posts() ) : the_post(); ?>
+						<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
+							<div class="entry-content">
+								<?php the_content(); ?>
+
+								<button id="loadmoreposts">Load More Posts</button>
+								<div id="posts-container"></div>
+							</div><!-- .entry-content -->
+						</article><!-- #post-## -->
+					<?php endwhile; ?>  
+				</div>
+			</div>
+		</main><!-- #main -->
+	</div><!-- #primary -->
+</div><!-- .wrap -->
+
+
+
+// Load More Posts 
+var loadMorePostsBtn = document.getElementById("loadmoreposts");
+var loadMorePostsContainer = document.getElementById("posts-container");
+
+
+if(loadMorePostsBtn){
+	loadMorePostsBtn.addEventListener("click", function(){
+			var ourRequest = new XMLHttpRequest();
+			ourRequest.open('GET', 'http://localhost/mercurygate/wp-json/wp/v2/posts?&order=desc');
+			ourRequest.onload = function() {
+				if(ourRequest.status >= 200 && ourRequest.status < 400 ){
+					var data = JSON.parse(ourRequest.responseText);
+					createHtml(data);
+					loadMorePostsBtn.remove();
+				} else {
+					console.log("Connected!");
+				}
+			};
+
+
+			ourRequest.onerror = function(){
+				console.log("Error!");
+			}
+			ourRequest.send();
+	});
+
+}
+
+function createHtml(postData){
+	var htmlString = '';
+	for(i=0;i<postData.length;i++){
+		htmlString += '<h2>' + postData[i].title.rendered + '</h2>';
+		htmlString += postData[i].content.rendered;
+	}
+	loadMorePostsContainer.innerHTML = htmlString;
+}
