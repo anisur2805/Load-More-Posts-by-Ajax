@@ -1,0 +1,116 @@
+// Place on function 
+
+	wp_enqueue_script( 'testjs', get_theme_file_uri( '/assets/js/test.js' ), array( 'jquery' ), '1.0', true );
+	wp_localize_script( 'testjs', 'anisur', array('ajaxurl'=>admin_url('admin-ajax.php')) );
+
+
+}
+add_action( 'wp_enqueue_scripts', 'twentyseventeen_scripts' );
+
+add_action('wp_ajax_get_single', 'get_single');
+add_action('wp_ajax_nopriv_get_signel', 'get_single');
+
+function get_single()
+{	
+
+	$radnum 	= $_POST['radnum'];
+	$field_name = $_POST['field_name'];
+	$value 		= $_POST['value'];
+	$tbl = 'wp_auto_save';
+	global $wpdb;
+	$msg = "Failed";
+
+	$has_fid = $wpdb->get_results("SELECT fid FROM ".$tbl." WHERE fid=".$radnum);
+	if(count($has_fid)<=0){
+		$arr[$field_name] = $value;
+		$arr['fid'] = $radnum;
+		$wpdb->insert( $tbl,$arr);
+		if($wpdb->insert_id) $msg = "Successfully Inserted";
+
+	}else{
+		$arr[$field_name] = $value;
+		$up = $wpdb->update($tbl,$arr,array('fid' =>$radnum));
+		if($up) $msg = "Updated Row";
+		
+	}
+
+	wp_send_json_success( $msg );
+
+}
+
+function get_auto_save_data(){
+	global $wpdb;
+	$r = $wpdb->get_results("SELECT * FROM wp_auto_save");
+	return $r;	
+}
+
+
+
+//Jquery Axax
+jQuery(document).ready(function( $ ){
+
+	var radnum = new Date().valueOf();
+	$("#field_eou0t").val(radnum);
+	$("#field_eou0t").attr("readonly", "readonly");
+	
+ 
+	get_field_data("#field_qh4icy2","name");
+	get_field_data("#field_29yf4d2","email");
+	get_field_data("#field_4vsxv","phone");
+	
+	//field_id is input box id="field_id"
+	//title is table column name
+	function get_field_data(field_id,title){
+		$(field_id).on('focusout', function(){
+			var value = $(this).val();
+			if(value!=''){
+				request(value,title);
+			}
+		});
+	}
+
+	function request( value, field_name ){
+		$.ajax({ 
+			url	: anisur.ajaxurl,
+			type: 'POST',
+			data: {action: 'get_single',value:value,field_name:field_name,radnum:radnum}, 
+			success:function(data){
+				console.log( data) ;
+			}
+		});
+	}
+
+
+});
+
+
+
+// Output
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>Id</th>
+			<th>FId</th>
+			<th>Name</th>
+			<th>Email</th>
+		</tr>
+	</thead>
+	<tbody>
+	<?php 
+		if(is_array(get_auto_save_data())):
+			foreach (get_auto_save_data() as $data): ?>
+				
+			<tr>
+				<td><?php echo $data->id?></td>
+				<td><?php echo $data->fid?></td>
+				<td><?php echo $data->name?></td>
+				<td><?php echo $data->email?></td>
+				
+			</tr>
+	<?php			
+			endforeach;
+		endif;
+	?>
+	</tbody>
+</table>
