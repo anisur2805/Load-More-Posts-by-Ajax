@@ -20,13 +20,14 @@ if ( $my_posts->have_posts() ):
 ?>
 <div class="my-posts">
 <?php while ( $my_posts->have_posts() ): $my_posts->the_post()?>
-	<h2><?php the_title()?></h2>
-	<?php the_excerpt()?>
-	<?php endwhile?>
+		<h2><?php the_title()?></h2>
+		<?php the_excerpt()?>
+		<?php endwhile?>
 <?php endif?>
 </div>
 <div class="loadmore">Load More...</div>
 </div>
+
 <div class="col-md-4">
 <?php get_sidebar();?>
 </div>
@@ -77,9 +78,9 @@ function load_posts_by_ajax_callback() {
     if ( $my_posts->have_posts() ):
     ?>
 <?php while ( $my_posts->have_posts() ): $my_posts->the_post()?>
-	<h2><?php the_title()?></h2>
-	<?php the_excerpt()?>
-	<?php endwhile?>
+		<h2><?php the_title()?></h2>
+		<?php the_excerpt()?>
+		<?php endwhile?>
 <?php
 endif;
 
